@@ -1,0 +1,404 @@
+:root {
+	--primary-color: #6a11cb;
+	--secondary-color: #2575fc;
+	--accent-color: #ff3d71;
+	--gradient-start: #6a11cb;
+	--gradient-end: #2575fc;
+	--text-primary: #ffffff;
+	--text-secondary: #e5e7eb;
+	--background: #0f172a;
+	--card-bg: rgba(25, 35, 60, 0.8);
+	--shadow-color: rgba(0, 0, 0, 0.25);
+	--highlight: #ffc53d;
+}
+
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+body {
+	font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+	background: var(--background);
+	color: var(--text-primary);
+	margin: 0;
+	padding: 0;
+	display: flex;
+	min-height: 100vh;
+	align-items: center;
+	justify-content: center;
+	overflow-x: hidden;
+	position: relative;
+}
+
+/* Stars background */
+.stars {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: -1;
+	overflow: hidden;
+	background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+}
+
+.stars::before,
+.stars::after {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	animation: sparkle 15s ease infinite alternate;
+}
+
+.stars::before {
+	background-image:
+		radial-gradient(1px 1px at 25% 15%, white, transparent),
+		radial-gradient(1px 1px at 50% 45%, white, transparent),
+		radial-gradient(2px 2px at 15% 75%, white, transparent), radial-gradient(1px 1px at 75% 5%, white, transparent),
+		radial-gradient(1px 1px at 85% 25%, white, transparent),
+		radial-gradient(1px 1px at 35% 65%, white, transparent), radial-gradient(2px 2px at 65% 85%, white, transparent);
+	background-size: 650px 650px;
+}
+
+.stars::after {
+	background-image:
+		radial-gradient(1px 1px at 10% 10%, white, transparent),
+		radial-gradient(1px 1px at 30% 35%, white, transparent),
+		radial-gradient(1px 1px at 60% 15%, white, transparent),
+		radial-gradient(2px 2px at 45% 95%, white, transparent), radial-gradient(1px 1px at 80% 50%, white, transparent);
+	background-size: 550px 550px;
+	animation-delay: 5s;
+}
+
+/* Container styling */
+.container {
+	background: var(--card-bg);
+	padding: 3.5rem 3rem;
+	border-radius: 24px;
+	box-shadow:
+		0 15px 35px var(--shadow-color),
+		0 0 60px rgba(106, 17, 203, 0.3);
+	text-align: center;
+	max-width: 90%;
+	width: 500px;
+	animation: floatIn 1.2s cubic-bezier(0.23, 1, 0.32, 1);
+	position: relative;
+	backdrop-filter: blur(10px);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	overflow: hidden;
+	transform-style: preserve-3d;
+	perspective: 1000px;
+	z-index: 1;
+}
+
+.container::before {
+	content: '';
+	position: absolute;
+	top: -50%;
+	left: -50%;
+	width: 200%;
+	height: 200%;
+	background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+	transform: rotate(45deg);
+	animation: lightSweep 8s linear infinite;
+	z-index: -1;
+}
+
+/* Glowing badge */
+.glowing-badge {
+	position: absolute;
+	top: -20px;
+	right: -20px;
+	width: 60px;
+	height: 60px;
+	background: linear-gradient(135deg, var(--accent-color), var(--secondary-color));
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: bold;
+	font-size: 24px;
+	color: white;
+	box-shadow: 0 0 20px rgba(255, 61, 113, 0.6);
+	animation: pulse 2s infinite alternate;
+	transform: rotate(-15deg);
+}
+
+/* Typography styling */
+h1 {
+	margin: 0 0 1.5rem 0;
+	font-size: 2.8rem;
+	font-weight: 800;
+	background: linear-gradient(to right, var(--gradient-start), var(--gradient-end), var(--accent-color));
+	background-size: 300% auto;
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+	letter-spacing: -0.5px;
+	animation: gradientShift 8s ease infinite;
+	position: relative;
+	text-shadow: 0 5px 15px rgba(106, 17, 203, 0.2);
+}
+
+h1::after {
+	content: '';
+	position: absolute;
+	bottom: -8px;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 100px;
+	height: 3px;
+	background: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
+	border-radius: 3px;
+	animation: widthPulse 4s ease infinite;
+}
+
+p {
+	margin: 0 0 1.5rem 0;
+	color: var(--text-secondary);
+	font-size: 1.1rem;
+	line-height: 1.8;
+	opacity: 0;
+	animation: fadeIn 1.5s ease-out forwards;
+	animation-delay: 1s;
+}
+
+.highlight {
+	color: var(--highlight);
+	font-weight: bold;
+	position: relative;
+	padding: 0 5px;
+	display: inline-block;
+	animation: wobble 2.5s ease-in-out infinite;
+}
+
+.highlight::before {
+	content: '';
+	position: absolute;
+	width: 100%;
+	height: 40%;
+	background: rgba(255, 197, 61, 0.15);
+	bottom: 0;
+	left: 0;
+	z-index: -1;
+	border-radius: 3px;
+}
+
+/* Secret message (Easter egg within Easter egg) */
+.secret-message {
+	position: absolute;
+	bottom: -100px;
+	left: 50%;
+	transform: translateX(-50%);
+	padding: 10px 20px;
+	background: var(--accent-color);
+	color: white;
+	border-radius: 20px;
+	font-size: 0.9rem;
+	font-weight: bold;
+	opacity: 0;
+	transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+	box-shadow: 0 5px 15px rgba(255, 61, 113, 0.4);
+	text-wrap: nowrap;
+}
+
+.container:hover .secret-message {
+	bottom: 20px;
+	opacity: 1;
+}
+
+/* Decorative elements */
+.decorative-elements {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	top: 0;
+	left: 0;
+	z-index: -1;
+	overflow: hidden;
+}
+
+.circle,
+.square,
+.triangle {
+	position: absolute;
+	opacity: 0.15;
+	filter: blur(1px);
+}
+
+.circle {
+	width: 120px;
+	height: 120px;
+	border-radius: 50%;
+	background: var(--secondary-color);
+	top: -30px;
+	left: -30px;
+	animation: float 10s infinite alternate ease-in-out;
+}
+
+.square {
+	width: 80px;
+	height: 80px;
+	background: var(--accent-color);
+	bottom: -20px;
+	right: 30px;
+	transform: rotate(25deg);
+	animation: rotate 15s linear infinite;
+}
+
+.triangle {
+	width: 0;
+	height: 0;
+	border-left: 60px solid transparent;
+	border-right: 60px solid transparent;
+	border-bottom: 100px solid var(--primary-color);
+	right: -40px;
+	top: 50%;
+	animation: float 7s infinite alternate-reverse ease-in-out;
+}
+
+/* Animations */
+@keyframes floatIn {
+	0% {
+		opacity: 0;
+		transform: translateY(40px) rotateX(10deg);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(0) rotateX(0);
+	}
+}
+
+@keyframes fadeIn {
+	0% {
+		opacity: 0;
+		transform: translateY(15px);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes gradientShift {
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
+}
+
+@keyframes pulse {
+	0% {
+		transform: scale(1) rotate(-15deg);
+		box-shadow: 0 0 20px rgba(255, 61, 113, 0.6);
+	}
+	100% {
+		transform: scale(1.05) rotate(-10deg);
+		box-shadow: 0 0 30px rgba(255, 61, 113, 0.8);
+	}
+}
+
+@keyframes float {
+	0% {
+		transform: translateY(0);
+	}
+	100% {
+		transform: translateY(-15px);
+	}
+}
+
+@keyframes rotate {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@keyframes sparkle {
+	0%,
+	100% {
+		opacity: 0.8;
+	}
+	50% {
+		opacity: 0.5;
+	}
+}
+
+@keyframes lightSweep {
+	0% {
+		transform: translateX(-150%) translateY(-150%) rotate(45deg);
+	}
+	50% {
+		transform: translateX(0%) translateY(0%) rotate(45deg);
+	}
+	100% {
+		transform: translateX(150%) translateY(150%) rotate(45deg);
+	}
+}
+
+@keyframes wobble {
+	0%,
+	100% {
+		transform: translateY(0) rotate(0);
+	}
+	25% {
+		transform: translateY(-5px) rotate(-2deg);
+	}
+	75% {
+		transform: translateY(2px) rotate(2deg);
+	}
+}
+
+@keyframes widthPulse {
+	0%,
+	100% {
+		width: 100px;
+	}
+	50% {
+		width: 150px;
+	}
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+	.container {
+		padding: 2.5rem 1.5rem;
+		width: 92%;
+	}
+
+	h1 {
+		font-size: 2rem;
+	}
+
+	p {
+		font-size: 1rem;
+	}
+
+	.circle {
+		width: 80px;
+		height: 80px;
+	}
+
+	.square {
+		width: 60px;
+		height: 60px;
+	}
+
+	.triangle {
+		border-left: 40px solid transparent;
+		border-right: 40px solid transparent;
+		border-bottom: 70px solid var(--primary-color);
+	}
+}
