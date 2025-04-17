@@ -39,3 +39,5 @@ lerna-debug.log*
 
 # Build files
 *.tsbuildinfo
+
+/data
