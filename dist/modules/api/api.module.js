@@ -13,12 +13,13 @@ const user_module_1 = require("./modules/user/user.module");
 const database_module_1 = require("../../database/database.module");
 const repositories_module_1 = require("../../repositories/repositories.module");
 const api_controller_1 = require("./api.controller");
+const log_module_1 = require("../log/log.module");
 let ApiModule = class ApiModule {
 };
 exports.ApiModule = ApiModule;
 exports.ApiModule = ApiModule = __decorate([
     (0, common_1.Module)({
-        imports: [auth_module_1.AuthModule, user_module_1.UserModule, database_module_1.DatabaseModule, repositories_module_1.RepositoriesModule],
+        imports: [auth_module_1.AuthModule, user_module_1.UserModule, database_module_1.DatabaseModule, repositories_module_1.RepositoriesModule, log_module_1.LogModule],
         controllers: [api_controller_1.ApiController],
     })
 ], ApiModule);

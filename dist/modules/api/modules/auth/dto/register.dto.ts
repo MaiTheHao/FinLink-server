@@ -2,7 +2,7 @@ import { IsEmail, IsNotEmpty, IsString, IsStrongPassword, Matches } from 'class-
 import {
 	AuthValidationMessages,
 	UserValidationMessages,
-} from '../../../../../common/constants/validation-messages.constant';
+} from '../../../../../common/constants/validation_messages.constant';
 
 export class RegisterDto {
 	@IsNotEmpty({ message: AuthValidationMessages.EMAIL_REQUIRED })

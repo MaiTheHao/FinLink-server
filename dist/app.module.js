@@ -10,15 +10,12 @@ exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
-const logger_middleware_1 = require("./common/middleware/logger.middleware");
 const config_1 = require("@nestjs/config");
 const api_module_1 = require("./modules/api/api.module");
 const serve_static_1 = require("@nestjs/serve-static");
 const path_1 = require("path");
 let AppModule = class AppModule {
-    configure(consumer) {
-        consumer.apply(logger_middleware_1.LoggerMiddleware).forRoutes('*');
-    }
+    configure(consumer) { }
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([

@@ -1,5 +1,5 @@
 import { generateToken, isTokenExpired as isTokenExpiredUtil, validateToken } from './token.util';
-import { ResetPasswordToken } from 'src/entities/reset_password_token.entity';
+import { ResetPassword } from 'src/entities/interfaces/reset_password.interface';
 import { getEnvNumber } from './env.util';
 
 const getTokenExp = () => getEnvNumber('RESET_PASSWORD_TOKEN_EXPIRATION_MS', 3600000);
@@ -18,7 +18,7 @@ export function generateResetPasswordToken(email: string): { token: string; exp:
  * @param token - The reset password token to check
  * @returns {boolean} - true if the token is expired, false otherwise
  */
-export function isTokenExpired(token: ResetPasswordToken): boolean {
+export function isTokenExpired(token: ResetPassword): boolean {
 	return isTokenExpiredUtil(token.exp);
 }
 
@@ -29,11 +29,7 @@ export function isTokenExpired(token: ResetPasswordToken): boolean {
  * @param email - The email address of the user requesting the password reset
  * @returns {boolean} - true if the token is valid, false otherwise
  */
-export function validateResetPasswordToken(
-	storedToken: ResetPasswordToken,
-	inputToken: string,
-	email: string
-): boolean {
+export function validateResetPasswordToken(storedToken: ResetPassword, inputToken: string, email: string): boolean {
 	return validateToken(
 		{ identifier: storedToken.email, token: storedToken.token, exp: storedToken.exp },
 		inputToken,

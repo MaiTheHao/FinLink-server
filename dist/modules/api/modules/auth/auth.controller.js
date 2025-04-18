@@ -21,31 +21,40 @@ const reset_password_dto_1 = require("./dto/reset_password.dto");
 const verify_reset_password_dto_1 = require("./dto/verify_reset_password.dto");
 const auth_guard_1 = require("./guards/auth.guard");
 const verify_email_dto_1 = require("./dto/verify_email.dto");
+const log_service_1 = require("../../../log/log.service");
 let AuthController = class AuthController {
     authService;
-    constructor(authService) {
+    logService;
+    constructor(authService, logService) {
         this.authService = authService;
+        this.logService = logService;
     }
     async login(loginDto) {
+        await this.logService.logInfo('Login attempt', loginDto.email);
         return this.authService.login(loginDto);
     }
     async register(registerDto) {
+        await this.logService.logInfo('Register attempt', registerDto.email);
         return this.authService.register(registerDto);
     }
     async requireResetPassword(resetPasswordDto) {
+        await this.logService.logInfo('Reset password requested', resetPasswordDto.email);
         return this.authService.requireResetPassword(resetPasswordDto);
     }
     async verifyResetPasswordToken(verifyResetPasswordDto) {
+        await this.logService.logInfo('Verify reset password token', verifyResetPasswordDto.token);
         return this.authService.verifyResetPasswordToken(verifyResetPasswordDto);
     }
     async requireVerifyEmail(email) {
+        await this.logService.logInfo('Send verification email', email);
         return this.authService.requireVerifyEmail(email);
     }
     async verifyEmailToken(verifyEmailDto) {
-        console.log(verifyEmailDto);
+        await this.logService.logInfo('Verify email token', verifyEmailDto.token);
         return this.authService.verifyEmailToken(verifyEmailDto);
     }
     async getProfile(req) {
+        await this.logService.logInfo('Profile accessed', req.user?.email);
         return req.user;
     }
 };
@@ -102,6 +111,7 @@ __decorate([
 ], AuthController.prototype, "getProfile", null);
 exports.AuthController = AuthController = __decorate([
     (0, common_1.Controller)('auth'),
-    __metadata("design:paramtypes", [auth_service_1.AuthService])
+    __metadata("design:paramtypes", [auth_service_1.AuthService,
+        log_service_1.LogService])
 ], AuthController);
 //# sourceMappingURL=auth.controller.js.map

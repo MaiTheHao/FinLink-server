@@ -1,5 +1,5 @@
 import { IsEmail, IsNotEmpty, IsString, IsStrongPassword } from 'class-validator';
-import { AuthValidationMessages, PasswordMessages } from '../../../../../common/constants/validation-messages.constant';
+import { AuthValidationMessages, PasswordMessages } from '../../../../../common/constants/validation_messages.constant';
 
 export class ResetPasswordDto {
 	@IsNotEmpty({ message: AuthValidationMessages.EMAIL_REQUIRED })

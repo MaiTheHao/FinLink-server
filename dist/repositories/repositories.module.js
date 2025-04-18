@@ -8,18 +8,32 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RepositoriesModule = void 0;
 const common_1 = require("@nestjs/common");
-const user_repository_1 = require("./user.repository");
+const user_repository_1 = require("./json/user.repository");
 const database_module_1 = require("../database/database.module");
-const reset_password_repository_1 = require("./reset_password.repository");
-const email_verification_repository_1 = require("./email_verification.repository");
+const reset_password_repository_1 = require("./json/reset_password.repository");
+const email_verification_repository_1 = require("./json/email_verification.repository");
+const mongo_user_repository_1 = require("./mongo/mongo-user.repository");
+const json_log_repository_1 = require("./json/json-log.repository");
 let RepositoriesModule = class RepositoriesModule {
 };
 exports.RepositoriesModule = RepositoriesModule;
 exports.RepositoriesModule = RepositoriesModule = __decorate([
     (0, common_1.Module)({
         imports: [database_module_1.DatabaseModule],
-        providers: [user_repository_1.UserRepository, reset_password_repository_1.ResetPasswordRepository, email_verification_repository_1.EmailVerificationRepository],
-        exports: [user_repository_1.UserRepository, reset_password_repository_1.ResetPasswordRepository, email_verification_repository_1.EmailVerificationRepository],
+        providers: [
+            user_repository_1.UserRepository,
+            reset_password_repository_1.ResetPasswordRepository,
+            email_verification_repository_1.EmailVerificationRepository,
+            json_log_repository_1.JsonLogRepository,
+            mongo_user_repository_1.MongoUserRepository,
+        ],
+        exports: [
+            user_repository_1.UserRepository,
+            reset_password_repository_1.ResetPasswordRepository,
+            email_verification_repository_1.EmailVerificationRepository,
+            json_log_repository_1.JsonLogRepository,
+            mongo_user_repository_1.MongoUserRepository,
+        ],
     })
 ], RepositoriesModule);
 //# sourceMappingURL=repositories.module.js.map

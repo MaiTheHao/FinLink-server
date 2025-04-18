@@ -11,15 +11,16 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { UserService } from '../user/user.service';
 import { UserRegister } from './interfaces/user.register.interface';
-import { ResetPasswordRepository } from 'src/repositories/reset_password.repository';
+import { ResetPasswordRepository } from 'src/repositories/json/reset_password.repository';
 import { ResetPasswordDto } from './dto/reset_password.dto';
 import { VerifyResetPasswordDto } from './dto/verify_reset_password.dto';
 import { validateResetPasswordToken } from 'src/common/utils/reset_password.util';
 import { JwtService } from '@nestjs/jwt';
 import { VerifyEmailDto } from './dto/verify_email.dto';
-import { EmailVerificationRepository } from 'src/repositories/email_verification.repository';
+import { EmailVerificationRepository } from 'src/repositories/json/email_verification.repository';
 import { validateEmailVerificationToken } from 'src/common/utils/email_verification.util';
 import { EmailService } from '../email/email.service';
+import { isEmpty } from 'lodash';
 
 @Injectable()
 export class AuthService {
@@ -35,17 +36,21 @@ export class AuthService {
 		const { email, password } = loginDto;
 
 		try {
-			const user = await this.userService.findUserWithPassword(email);
-			if (!user) throw new NotFoundException('Người dùng không tồn tại');
+			const user = await this.userService.findByEmail(email);
+			if (isEmpty(user)) throw new NotFoundException('Người dùng không tồn tại');
 
-			if (!user.isEmailVerified) throw new ForbiddenException('Email chưa được xác thực');
+			if (!user.IsEmailVerified) throw new ForbiddenException('Email chưa được xác thực');
 
-			const isPasswordValid = await this.userService.verifyPassword(user, password);
+			if (isEmpty(user.password)) {
+				throw new UnauthorizedException('Tài khoản này không có mật khẩu');
+			}
+
+			const isPasswordValid = await this.userService.verifyPassword(password, user.password);
 			if (!isPasswordValid) {
 				throw new UnauthorizedException('Mật khẩu không chính xác');
 			}
 
-			const payload = { email: user.email, sub: user.id };
+			const payload = { email: user.email, sub: user._id };
 			const token = await this.jwtService.signAsync(payload);
 
 			return { message: 'Đăng nhập thành công', access_token: token };
@@ -105,7 +110,7 @@ export class AuthService {
 		try {
 			const user = await this.userService.findByEmail(email);
 
-			if (user.isEmailVerified) {
+			if (user.IsEmailVerified) {
 				throw new ConflictException('Email đã được xác thực');
 			}
 
@@ -134,17 +139,15 @@ export class AuthService {
 		}
 
 		try {
-			await this.userService.findByEmail(email);
-
 			if (!validateResetPasswordToken(storedToken, token, email)) {
 				await this.resetPasswordRepository.delete(email);
 				throw new BadRequestException('Mã xác thực không hợp lệ hoặc đã hết hạn');
 			}
 
-			const user = await this.userService.findUserWithPassword(email);
+			const user = await this.userService.findByEmail(email);
 
 			await Promise.all([
-				this.userService.updateUserPassword(user.id, storedToken.newPassword),
+				this.userService.updateUserPassword(user._id, storedToken.newPassword),
 				this.resetPasswordRepository.delete(email),
 			]);
 
@@ -166,9 +169,9 @@ export class AuthService {
 		}
 
 		try {
-			const user = await this.userService.findUserWithPassword(email);
+			const user = await this.userService.findByEmail(email);
 
-			if (user.isEmailVerified) {
+			if (user.IsEmailVerified) {
 				throw new ConflictException('Email đã được xác thực');
 			}
 
@@ -178,7 +181,7 @@ export class AuthService {
 			}
 
 			await Promise.all([
-				this.userService.setEmailVerified(user.id, true),
+				this.userService.setEmailVerified(user._id, true),
 				this.emailVerificationRepository.delete(email),
 			]);
 

@@ -1,49 +1,56 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
-import { UserRepository } from 'src/repositories/user.repository';
-import { getSafeUserDetail } from 'src/common/utils/user.util';
+import { UserRepository } from 'src/repositories/json/user.repository';
+import { getSafeUserEmailAndPassword } from 'src/common/utils/user.util';
 import { hashPassword, comparePassword } from 'src/common/utils/password.util';
 import { isBcryptHash } from 'src/common/utils/hash.util';
-import { User } from 'src/entities/user.entity';
+import { User } from 'src/entities/interfaces/user.interface';
 import { UserRegister } from '../auth/interfaces/user.register.interface';
+import { MongoUserRepository } from 'src/repositories/mongo/mongo-user.repository';
 
 @Injectable()
 export class UserService {
-	constructor(private readonly userRepository: UserRepository) {}
+	constructor(
+		private readonly userRepository: UserRepository,
+		private readonly mongoUserRepository: MongoUserRepository
+	) {}
 
-	async findByEmail(email: string) {
-		const user = await this.userRepository.findByEmail(email);
+	async findByEmail(email: string): Promise<User> {
+		const user = await this.mongoUserRepository.findByEmail(email);
 		if (!user) {
 			throw new NotFoundException(`Không tìm thấy người dùng với email ${email}.`);
 		}
-		return getSafeUserDetail(user);
+		return user;
 	}
 
-	async findById(id: string) {
-		const user = await this.userRepository.findById(id);
+	async findById(id: string): Promise<User> {
+		const user = await this.mongoUserRepository.findById(id);
 		if (!user) {
 			throw new NotFoundException(`Không tìm thấy người dùng với ID ${id}.`);
 		}
-		return getSafeUserDetail(user);
+		return user;
+	}
+
+	async findUserWithPassword(email: string): Promise<Pick<User, 'email' | 'password'>> {
+		const user = await this.mongoUserRepository.findByEmail(email);
+		if (!user) {
+			throw new NotFoundException(`Không tìm thấy người dùng với email ${email}.`);
+		}
+		return getSafeUserEmailAndPassword(user);
 	}
 
 	async updateProfile(id: string, data: any) {
-		const user = await this.userRepository.findById(id);
+		const user = await this.mongoUserRepository.findById(id);
 		if (!user) {
 			throw new NotFoundException(`Không tìm thấy người dùng này.`);
 		}
 
-		return this.userRepository.update(id, { ...user, ...data });
+		return this.mongoUserRepository.update(id, data);
 	}
 
 	async createUser(userData: UserRegister): Promise<User> {
-		const existingUser = await this.userRepository.findByEmail(userData.email);
-		if (existingUser) {
-			throw new ConflictException(`Email ${userData.email} đã tồn tại.`);
-		}
-
 		const hashedPassword = await hashPassword(userData.password);
 
-		const newUser = await this.userRepository.create({
+		const newUser = await this.mongoUserRepository.create({
 			...userData,
 			password: hashedPassword,
 		});
@@ -51,37 +58,38 @@ export class UserService {
 		return newUser;
 	}
 
-	async findUserWithPassword(email: string): Promise<User> {
-		const user = await this.userRepository.findByEmail(email);
-		if (!user) {
-			throw new NotFoundException(`Không tìm thấy người dùng với email ${email}.`);
-		}
-		return user;
-	}
-
 	async setEmailVerified(id: string, isVerified: boolean = true): Promise<User> {
-		const user = await this.userRepository.findById(id);
+		const user = await this.mongoUserRepository.findById(id);
 		if (!user) {
 			throw new NotFoundException(`Không tìm thấy người dùng với ID ${id}.`);
 		}
-
-		return this.userRepository.update(id, { ...user, isEmailVerified: isVerified });
+		const updatedUser = await this.mongoUserRepository.update(id, { IsEmailVerified: isVerified });
+		if (!updatedUser) {
+			throw new NotFoundException(`Lỗi trong quá trình cập nhật xác thực email`);
+		}
+		return updatedUser as User;
 	}
 
 	async updateUserPassword(id: string, newPassword: string): Promise<User> {
-		const user = await this.userRepository.findById(id);
-		if (!user) {
-			throw new NotFoundException(`Không tìm thấy người dùng với ID ${id}.`);
-		}
-
 		const hashedPassword = await hashPassword(newPassword);
-		return this.userRepository.update(id, { ...user, password: hashedPassword });
+		const updatedUser = await this.mongoUserRepository.update(id, { password: hashedPassword });
+		if (!updatedUser) {
+			throw new NotFoundException(`Không thể cập nhật mật khẩu cho người dùng với ID ${id}.`);
+		}
+		return updatedUser as User;
 	}
 
-	async verifyPassword(user: User, password: string): Promise<boolean> {
-		if (!user || !isBcryptHash(user.password)) {
+	/**
+	 * Kiểm tra xem mật khẩu đã mã hóa có hợp lệ hay không
+	 * @param plainPassword - Mật khẩu gốc
+	 * @param hashedPassword - Mật khẩu đã mã hóa
+	 * @returns - true nếu mật khẩu đã mã hóa hợp lệ, false nếu không
+	 */
+	async verifyPassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
+		if (!isBcryptHash(hashedPassword)) {
 			return false;
 		}
-		return comparePassword(password, user.password);
+		const isMatch = await comparePassword(plainPassword, hashedPassword);
+		return isMatch;
 	}
 }

@@ -1,5 +1,5 @@
 import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
-import { AuthValidationMessages, TokenMessages } from '../../../../../common/constants/validation-messages.constant';
+import { AuthValidationMessages, TokenMessages } from '../../../../../common/constants/validation_messages.constant';
 
 export class VerifyEmailDto {
 	@IsNotEmpty({ message: AuthValidationMessages.EMAIL_REQUIRED })

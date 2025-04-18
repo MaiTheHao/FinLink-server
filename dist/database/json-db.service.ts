@@ -28,12 +28,12 @@ export class JsonDbService implements DatabaseInterface {
 			if (Array.isArray(data)) {
 				const idCounts = new Map();
 				for (const item of data) {
-					if (item.id) {
-						idCounts.set(item.id, (idCounts.get(item.id) || 0) + 1);
+					if (item._id) {
+						idCounts.set(item._id, (idCounts.get(item._id) || 0) + 1);
 					}
 				}
 
-				const duplicates = [...idCounts.entries()].filter(([_, count]) => count > 1).map(([id]) => id);
+				const duplicates = [...idCounts.entries()].filter(([_, count]) => count > 1).map(([_id]) => _id);
 
 				if (duplicates.length > 0) {
 					console.warn(`Warning: Duplicate IDs found in ${collection}: ${duplicates.join(', ')}`);
@@ -64,15 +64,15 @@ export class JsonDbService implements DatabaseInterface {
 		}
 	}
 
-	async findById(collection: string, id: string): Promise<any> {
+	async findById(collection: string, _id: string): Promise<any> {
 		const items = await this.findAll(collection);
-		return items.find((item) => item.id === id);
+		return items.find((item) => item._id === _id);
 	}
 
 	async insertOne(collection: string, data: any): Promise<any> {
 		try {
 			if (!data) throw new Error('Data is required to insert into the collection.');
-			if (!data.id) throw new Error('ID is required to insert into the collection.');
+			if (!data._id) throw new Error('ID is required to insert into the collection.');
 
 			const items = await this.findAll(collection);
 
@@ -92,12 +92,12 @@ export class JsonDbService implements DatabaseInterface {
 		}
 	}
 
-	async updateOne(collection: string, id: string, data: any): Promise<any> {
+	async updateOne(collection: string, _id: string, data: any): Promise<any> {
 		try {
 			const items = await this.findAll(collection);
-			const index = items.findIndex((item) => item.id === id);
+			const index = items.findIndex((item) => item._id === _id);
 			if (index === -1) {
-				throw new Error(`Item with id ${id} not found in collection ${collection}.`);
+				throw new Error(`Item with _id ${_id} not found in collection ${collection}.`);
 			}
 			const updatedData = { ...items[index], ...data, updatedAt: new Date().toISOString() };
 			items[index] = updatedData;
@@ -109,9 +109,9 @@ export class JsonDbService implements DatabaseInterface {
 		}
 	}
 
-	async deleteOne(collection: string, id: string): Promise<boolean> {
+	async deleteOne(collection: string, _id: string): Promise<boolean> {
 		try {
-			if (!id) throw new Error('ID is required to delete from the collection.');
+			if (!_id) throw new Error('ID is required to delete from the collection.');
 			const items = await this.findAll(collection);
 
 			if (!items || items.length === 0) {
@@ -119,10 +119,10 @@ export class JsonDbService implements DatabaseInterface {
 				return false;
 			}
 
-			const index = items.findIndex((item) => item.id === id);
+			const index = items.findIndex((item) => item._id === _id);
 
 			if (index === -1) {
-				console.warn(`Item with id ${id} not found in collection ${collection}. Nothing to delete.`);
+				console.warn(`Item with _id ${_id} not found in collection ${collection}. Nothing to delete.`);
 				return false;
 			}
 			items.splice(index, 1);
@@ -159,5 +159,14 @@ export class JsonDbService implements DatabaseInterface {
 		return items.some((item) => {
 			return Object.entries(query).every(([key, value]) => item[key] === value);
 		});
+	}
+
+	async clear(collection: string): Promise<void> {
+		try {
+			await this.saveData(collection, []);
+		} catch (error) {
+			console.error(`Error clearing data from collection ${collection}:`, error);
+			throw error;
+		}
 	}
 }

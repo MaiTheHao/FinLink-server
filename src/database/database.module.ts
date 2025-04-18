@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { JsonDbService } from './json-db.service';
-import { MongoDbProvider } from './mongo-db.provider';
+import { databaseProviders } from './mongo-db.provider';
+import { modelsProviders } from './models.provider';
 
 @Module({
-	controllers: [],
-	providers: [JsonDbService, ...MongoDbProvider],
-	exports: [JsonDbService, ...MongoDbProvider],
+	imports: [ConfigModule],
+	providers: [JsonDbService, ...databaseProviders, ...modelsProviders],
+	exports: [JsonDbService, ...databaseProviders, ...modelsProviders],
 })
 export class DatabaseModule {}

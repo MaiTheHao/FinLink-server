@@ -11,80 +11,85 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserService = void 0;
 const common_1 = require("@nestjs/common");
-const user_repository_1 = require("../../../../repositories/user.repository");
+const user_repository_1 = require("../../../../repositories/json/user.repository");
 const user_util_1 = require("../../../../common/utils/user.util");
 const password_util_1 = require("../../../../common/utils/password.util");
 const hash_util_1 = require("../../../../common/utils/hash.util");
+const mongo_user_repository_1 = require("../../../../repositories/mongo/mongo-user.repository");
 let UserService = class UserService {
     userRepository;
-    constructor(userRepository) {
+    mongoUserRepository;
+    constructor(userRepository, mongoUserRepository) {
         this.userRepository = userRepository;
+        this.mongoUserRepository = mongoUserRepository;
     }
     async findByEmail(email) {
-        const user = await this.userRepository.findByEmail(email);
-        if (!user) {
-            throw new common_1.NotFoundException(`Không tìm thấy người dùng với email ${email}.`);
-        }
-        return (0, user_util_1.getSafeUserDetail)(user);
-    }
-    async findById(id) {
-        const user = await this.userRepository.findById(id);
-        if (!user) {
-            throw new common_1.NotFoundException(`Không tìm thấy người dùng với ID ${id}.`);
-        }
-        return (0, user_util_1.getSafeUserDetail)(user);
-    }
-    async updateProfile(id, data) {
-        const user = await this.userRepository.findById(id);
-        if (!user) {
-            throw new common_1.NotFoundException(`Không tìm thấy người dùng này.`);
-        }
-        return this.userRepository.update(id, { ...user, ...data });
-    }
-    async createUser(userData) {
-        const existingUser = await this.userRepository.findByEmail(userData.email);
-        if (existingUser) {
-            throw new common_1.ConflictException(`Email ${userData.email} đã tồn tại.`);
-        }
-        const hashedPassword = await (0, password_util_1.hashPassword)(userData.password);
-        const newUser = await this.userRepository.create({
-            ...userData,
-            password: hashedPassword,
-        });
-        return newUser;
-    }
-    async findUserWithPassword(email) {
-        const user = await this.userRepository.findByEmail(email);
+        const user = await this.mongoUserRepository.findByEmail(email);
         if (!user) {
             throw new common_1.NotFoundException(`Không tìm thấy người dùng với email ${email}.`);
         }
         return user;
     }
-    async setEmailVerified(id, isVerified = true) {
-        const user = await this.userRepository.findById(id);
+    async findById(id) {
+        const user = await this.mongoUserRepository.findById(id);
         if (!user) {
             throw new common_1.NotFoundException(`Không tìm thấy người dùng với ID ${id}.`);
         }
-        return this.userRepository.update(id, { ...user, isEmailVerified: isVerified });
+        return user;
+    }
+    async findUserWithPassword(email) {
+        const user = await this.mongoUserRepository.findByEmail(email);
+        if (!user) {
+            throw new common_1.NotFoundException(`Không tìm thấy người dùng với email ${email}.`);
+        }
+        return (0, user_util_1.getSafeUserEmailAndPassword)(user);
+    }
+    async updateProfile(id, data) {
+        const user = await this.mongoUserRepository.findById(id);
+        if (!user) {
+            throw new common_1.NotFoundException(`Không tìm thấy người dùng này.`);
+        }
+        return this.mongoUserRepository.update(id, data);
+    }
+    async createUser(userData) {
+        const hashedPassword = await (0, password_util_1.hashPassword)(userData.password);
+        const newUser = await this.mongoUserRepository.create({
+            ...userData,
+            password: hashedPassword,
+        });
+        return newUser;
+    }
+    async setEmailVerified(id, isVerified = true) {
+        const user = await this.mongoUserRepository.findById(id);
+        if (!user) {
+            throw new common_1.NotFoundException(`Không tìm thấy người dùng với ID ${id}.`);
+        }
+        const updatedUser = await this.mongoUserRepository.update(id, { IsEmailVerified: isVerified });
+        if (!updatedUser) {
+            throw new common_1.NotFoundException(`Lỗi trong quá trình cập nhật xác thực email`);
+        }
+        return updatedUser;
     }
     async updateUserPassword(id, newPassword) {
-        const user = await this.userRepository.findById(id);
-        if (!user) {
-            throw new common_1.NotFoundException(`Không tìm thấy người dùng với ID ${id}.`);
-        }
         const hashedPassword = await (0, password_util_1.hashPassword)(newPassword);
-        return this.userRepository.update(id, { ...user, password: hashedPassword });
+        const updatedUser = await this.mongoUserRepository.update(id, { password: hashedPassword });
+        if (!updatedUser) {
+            throw new common_1.NotFoundException(`Không thể cập nhật mật khẩu cho người dùng với ID ${id}.`);
+        }
+        return updatedUser;
     }
-    async verifyPassword(user, password) {
-        if (!user || !(0, hash_util_1.isBcryptHash)(user.password)) {
+    async verifyPassword(plainPassword, hashedPassword) {
+        if (!(0, hash_util_1.isBcryptHash)(hashedPassword)) {
             return false;
         }
-        return (0, password_util_1.comparePassword)(password, user.password);
+        const isMatch = await (0, password_util_1.comparePassword)(plainPassword, hashedPassword);
+        return isMatch;
     }
 };
 exports.UserService = UserService;
 exports.UserService = UserService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [user_repository_1.UserRepository])
+    __metadata("design:paramtypes", [user_repository_1.UserRepository,
+        mongo_user_repository_1.MongoUserRepository])
 ], UserService);
 //# sourceMappingURL=user.service.js.map

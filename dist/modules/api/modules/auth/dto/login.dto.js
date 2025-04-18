@@ -11,7 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LoginDto = void 0;
 const class_validator_1 = require("class-validator");
-const validation_messages_constant_1 = require("../../../../../common/constants/validation-messages.constant");
+const validation_messages_constant_1 = require("../../../../../common/constants/validation_messages.constant");
 class LoginDto {
     email;
     password;

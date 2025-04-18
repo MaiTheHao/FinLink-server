@@ -12,12 +12,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
 const user_service_1 = require("../user/user.service");
-const reset_password_repository_1 = require("../../../../repositories/reset_password.repository");
+const reset_password_repository_1 = require("../../../../repositories/json/reset_password.repository");
 const reset_password_util_1 = require("../../../../common/utils/reset_password.util");
 const jwt_1 = require("@nestjs/jwt");
-const email_verification_repository_1 = require("../../../../repositories/email_verification.repository");
+const email_verification_repository_1 = require("../../../../repositories/json/email_verification.repository");
 const email_verification_util_1 = require("../../../../common/utils/email_verification.util");
 const email_service_1 = require("../email/email.service");
+const lodash_1 = require("lodash");
 let AuthService = class AuthService {
     jwtService;
     emailService;
@@ -34,16 +35,19 @@ let AuthService = class AuthService {
     async login(loginDto) {
         const { email, password } = loginDto;
         try {
-            const user = await this.userService.findUserWithPassword(email);
-            if (!user)
+            const user = await this.userService.findByEmail(email);
+            if ((0, lodash_1.isEmpty)(user))
                 throw new common_1.NotFoundException('Người dùng không tồn tại');
-            if (!user.isEmailVerified)
+            if (!user.IsEmailVerified)
                 throw new common_1.ForbiddenException('Email chưa được xác thực');
-            const isPasswordValid = await this.userService.verifyPassword(user, password);
+            if ((0, lodash_1.isEmpty)(user.password)) {
+                throw new common_1.UnauthorizedException('Tài khoản này không có mật khẩu');
+            }
+            const isPasswordValid = await this.userService.verifyPassword(password, user.password);
             if (!isPasswordValid) {
                 throw new common_1.UnauthorizedException('Mật khẩu không chính xác');
             }
-            const payload = { email: user.email, sub: user.id };
+            const payload = { email: user.email, sub: user._id };
             const token = await this.jwtService.signAsync(payload);
             return { message: 'Đăng nhập thành công', access_token: token };
         }
@@ -91,7 +95,7 @@ let AuthService = class AuthService {
     async requireVerifyEmail(email) {
         try {
             const user = await this.userService.findByEmail(email);
-            if (user.isEmailVerified) {
+            if (user.IsEmailVerified) {
                 throw new common_1.ConflictException('Email đã được xác thực');
             }
             const record = await this.emailVerificationRepository.createOrUpdate(email);
@@ -115,14 +119,13 @@ let AuthService = class AuthService {
             throw new common_1.NotFoundException('Không tìm thấy mã xác thực');
         }
         try {
-            await this.userService.findByEmail(email);
             if (!(0, reset_password_util_1.validateResetPasswordToken)(storedToken, token, email)) {
                 await this.resetPasswordRepository.delete(email);
                 throw new common_1.BadRequestException('Mã xác thực không hợp lệ hoặc đã hết hạn');
             }
-            const user = await this.userService.findUserWithPassword(email);
+            const user = await this.userService.findByEmail(email);
             await Promise.all([
-                this.userService.updateUserPassword(user.id, storedToken.newPassword),
+                this.userService.updateUserPassword(user._id, storedToken.newPassword),
                 this.resetPasswordRepository.delete(email),
             ]);
             return { message: 'Đặt lại mật khẩu thành công' };
@@ -141,8 +144,8 @@ let AuthService = class AuthService {
             throw new common_1.NotFoundException('Không tìm thấy yêu cầu xác thực, có thể đã hết hạn hoặc chưa từng tồn tại');
         }
         try {
-            const user = await this.userService.findUserWithPassword(email);
-            if (user.isEmailVerified) {
+            const user = await this.userService.findByEmail(email);
+            if (user.IsEmailVerified) {
                 throw new common_1.ConflictException('Email đã được xác thực');
             }
             if (!(0, email_verification_util_1.validateEmailVerificationToken)(record, token, email)) {
@@ -150,7 +153,7 @@ let AuthService = class AuthService {
                 throw new common_1.BadRequestException('Mã xác thực không hợp lệ hoặc đã hết hạn. Vui lòng yêu cầu lại.');
             }
             await Promise.all([
-                this.userService.setEmailVerified(user.id, true),
+                this.userService.setEmailVerified(user._id, true),
                 this.emailVerificationRepository.delete(email),
             ]);
             return { message: 'Xác thực email thành công' };

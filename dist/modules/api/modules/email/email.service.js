@@ -12,69 +12,66 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.EmailService = void 0;
 const common_1 = require("@nestjs/common");
 const mailer_1 = require("@nestjs-modules/mailer");
+const network_util_1 = require("../../../../common/utils/network.util");
 let EmailService = class EmailService {
     mailer;
     constructor(mailer) {
         this.mailer = mailer;
     }
     async sendVerificationEmail(email, token) {
-        const FRONTEND_URL = process.env.FRONTEND_URL;
+        const FRONTEND_URL = process.env.NODE_ENV === 'production' ? process.env.FRONTEND_URL : (0, network_util_1.createServerUrl)();
         if (!FRONTEND_URL) {
-            throw new common_1.BadRequestException('Frontend URL not set in environment variables');
+            throw new common_1.BadRequestException('Chưa cấu hình FRONTEND_URL trong biến môi trường');
         }
         const verificationLink = `${FRONTEND_URL}/auth/verify-email?token=${token}&email=${email}`;
         try {
             await this.mailer.sendMail({
                 to: email,
-                subject: '🔒 Email Verification - FinLink',
-                text: `Please verify your email using this link: ${verificationLink}`,
+                subject: '🔒 Xác thực email - FinLink',
+                text: `Vui lòng xác thực email của bạn bằng liên kết sau: ${verificationLink}`,
                 html: `
-                  <div style="font-family: sans-serif; padding: 20px;">
-                    <h2>Verify your email</h2>
-                    <p>Hello <strong>${email}</strong>,</p>
-                    <p>Please click the link below to verify your email address:</p>
-                    <p style="margin: 10px 0;">${verificationLink}</p>
-                    <a href="${verificationLink}" style="display: inline-block; background: #4CAF50; color: white; padding: 10px 15px; border-radius: 5px; text-decoration: none;">
-                      Verify Email
-                    </a>
-                    <p style="margin-top: 20px;">If you did not request this, you can safely ignore this email.</p>
-                  </div>
-                `,
+				  <div style="font-family: sans-serif; padding: 20px;">
+					<h2>Xác thực email của bạn</h2>
+					<p>Xin chào <strong>${email}</strong>,</p>
+					<p>Vui lòng nhấn vào liên kết bên dưới để xác thực địa chỉ email của bạn:</p>
+					<a href="${verificationLink}" style="display: inline-block; background: #4CAF50; color: white; padding: 10px 15px; border-radius: 5px; text-decoration: none;">
+					  Xác thực email
+					</a>
+					<p style="margin-top: 20px;">Nếu bạn không yêu cầu điều này, hãy bỏ qua email này.</p>
+				  </div>
+				`,
             });
         }
         catch (err) {
-            console.error('Error sending email:', err);
-            throw new common_1.BadRequestException('Failed to send email verification');
+            throw new common_1.BadRequestException('Gửi email xác thực thất bại');
         }
     }
     async sendPasswordResetEmail(email, token) {
-        const FRONTEND_URL = process.env.FRONTEND_URL;
+        const FRONTEND_URL = process.env.NODE_ENV === 'production' ? process.env.FRONTEND_URL : (0, network_util_1.createServerUrl)();
         if (!FRONTEND_URL) {
-            throw new common_1.BadRequestException('Frontend URL not set in environment variables');
+            throw new common_1.BadRequestException('Chưa cấu hình FRONTEND_URL trong biến môi trường');
         }
         const resetLink = `${FRONTEND_URL}/auth/verify-reset-password?token=${token}&email=${email}`;
         try {
             await this.mailer.sendMail({
                 to: email,
-                subject: '🔒 Password Reset - FinLink',
-                text: `Reset your password using this link: ${resetLink}`,
+                subject: '🔒 Đặt lại mật khẩu - FinLink',
+                text: `Đặt lại mật khẩu của bạn bằng liên kết sau: ${resetLink}`,
                 html: `
-                  <div style="font-family: sans-serif; padding: 20px;">
-                    <h2>Reset your password</h2>
-                    <p>Hello <strong>${email}</strong>,</p>
-                    <p>Please click the link below to reset your password:</p>
-                    <p style="margin: 10px 0;">${resetLink}</p>
-                    <a href="${resetLink}" style="display: inline-block; background: #4CAF50; color: white; padding: 10px 15px; border-radius: 5px; text-decoration: none;">
-                      Reset Password
-                    </a>
-                    <p style="margin-top: 20px;">If you did not request this, you can safely ignore this email.</p>
-                  </div>
-                `,
+				  <div style="font-family: sans-serif; padding: 20px;">
+					<h2>Đặt lại mật khẩu</h2>
+					<p>Xin chào <strong>${email}</strong>,</p>
+					<p>Vui lòng nhấn vào liên kết bên dưới để đặt lại mật khẩu:</p>
+					<a href="${resetLink}" style="display: inline-block; background: #4CAF50; color: white; padding: 10px 15px; border-radius: 5px; text-decoration: none;">
+					  Đặt lại mật khẩu
+					</a>
+					<p style="margin-top: 20px;">Nếu bạn không yêu cầu điều này, hãy bỏ qua email này.</p>
+				  </div>
+				`,
             });
         }
         catch (err) {
-            console.error('Error sending password reset email:', err);
-            throw new common_1.BadRequestException('Failed to send password reset email');
+            throw new common_1.BadRequestException('Gửi email đặt lại mật khẩu thất bại');
         }
     }
 };

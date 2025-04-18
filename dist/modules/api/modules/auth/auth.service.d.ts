@@ -1,12 +1,12 @@
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { UserService } from '../user/user.service';
-import { ResetPasswordRepository } from 'src/repositories/reset_password.repository';
+import { ResetPasswordRepository } from 'src/repositories/json/reset_password.repository';
 import { ResetPasswordDto } from './dto/reset_password.dto';
 import { VerifyResetPasswordDto } from './dto/verify_reset_password.dto';
 import { JwtService } from '@nestjs/jwt';
 import { VerifyEmailDto } from './dto/verify_email.dto';
-import { EmailVerificationRepository } from 'src/repositories/email_verification.repository';
+import { EmailVerificationRepository } from 'src/repositories/json/email_verification.repository';
 import { EmailService } from '../email/email.service';
 export declare class AuthService {
     private readonly jwtService;
@@ -21,7 +21,7 @@ export declare class AuthService {
     }>;
     register(registerDto: RegisterDto): Promise<{
         message: string;
-        user: import("../../../../entities/user.entity").User;
+        user: import("../../../../entities/interfaces/user.interface").User;
     }>;
     requireResetPassword(resetPasswordDto: ResetPasswordDto): Promise<{
         message: string;

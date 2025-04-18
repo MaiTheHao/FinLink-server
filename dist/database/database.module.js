@@ -8,15 +8,18 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DatabaseModule = void 0;
 const common_1 = require("@nestjs/common");
+const config_1 = require("@nestjs/config");
 const json_db_service_1 = require("./json-db.service");
+const mongo_db_provider_1 = require("./mongo-db.provider");
+const models_provider_1 = require("./models.provider");
 let DatabaseModule = class DatabaseModule {
 };
 exports.DatabaseModule = DatabaseModule;
 exports.DatabaseModule = DatabaseModule = __decorate([
     (0, common_1.Module)({
-        controllers: [],
-        providers: [json_db_service_1.JsonDbService],
-        exports: [json_db_service_1.JsonDbService],
+        imports: [config_1.ConfigModule],
+        providers: [json_db_service_1.JsonDbService, ...mongo_db_provider_1.databaseProviders, ...models_provider_1.modelsProviders],
+        exports: [json_db_service_1.JsonDbService, ...mongo_db_provider_1.databaseProviders, ...models_provider_1.modelsProviders],
     })
 ], DatabaseModule);
 //# sourceMappingURL=database.module.js.map
