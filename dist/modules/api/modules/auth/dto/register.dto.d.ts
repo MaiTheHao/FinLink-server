@@ -1,6 +1,0 @@
-export declare class RegisterDto {
-    email: string;
-    password: string;
-    confirmPassword: string;
-    username: string;
-}

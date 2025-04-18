@@ -5,6 +5,8 @@ import { ResetPasswordRepository } from './json/reset_password.repository';
 import { EmailVerificationRepository } from './json/email_verification.repository';
 import { MongoUserRepository } from './mongo/mongo-user.repository';
 import { JsonLogRepository } from './json/json-log.repository';
+import { MongoEmailVerificationRepository } from './mongo/mongo-email_verification.repository';
+import { MongoResetPasswordRepository } from './mongo/mongo-reset_password.repository';
 
 @Module({
 	imports: [DatabaseModule],
@@ -16,6 +18,8 @@ import { JsonLogRepository } from './json/json-log.repository';
 		JsonLogRepository,
 		// MongoDB repositories
 		MongoUserRepository,
+		MongoEmailVerificationRepository,
+		MongoResetPasswordRepository,
 	],
 	exports: [
 		// JSON repositories
@@ -25,6 +29,8 @@ import { JsonLogRepository } from './json/json-log.repository';
 		JsonLogRepository,
 		// MongoDB repositories
 		MongoUserRepository,
+		MongoEmailVerificationRepository,
+		MongoResetPasswordRepository,
 	],
 })
 export class RepositoriesModule {}

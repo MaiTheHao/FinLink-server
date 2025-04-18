@@ -40,6 +40,8 @@ export class MongoDbBaseRepository<T extends Document> {
 
 	protected async findAllByField(field: keyof T, value: any): Promise<ErrorFirstResult<T[]>> {
 		try {
+			// Solve case field is email -> id
+			if (field === 'email') field = '_id' as keyof T;
 			const query = { [field]: value } as FilterQuery<T>;
 			const result = await this.model.find(query).exec();
 			if (isEmpty(result)) {
@@ -90,6 +92,9 @@ export class MongoDbBaseRepository<T extends Document> {
 
 	protected async deleteByField(field: keyof T, value: any): Promise<ErrorFirstResult<boolean>> {
 		try {
+			// Solve case field is email -> id
+			if (field === 'email') field = '_id' as keyof T;
+
 			const query = { [field]: value } as FilterQuery<T>;
 			const result = await this.model.deleteOne(query).exec();
 			return [null, result.deletedCount > 0];

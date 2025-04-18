@@ -11,16 +11,16 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { UserService } from '../user/user.service';
 import { UserRegister } from './interfaces/user.register.interface';
-import { ResetPasswordRepository } from 'src/repositories/json/reset_password.repository';
 import { ResetPasswordDto } from './dto/reset_password.dto';
 import { VerifyResetPasswordDto } from './dto/verify_reset_password.dto';
 import { validateResetPasswordToken } from 'src/common/utils/reset_password.util';
 import { JwtService } from '@nestjs/jwt';
 import { VerifyEmailDto } from './dto/verify_email.dto';
-import { EmailVerificationRepository } from 'src/repositories/json/email_verification.repository';
 import { validateEmailVerificationToken } from 'src/common/utils/email_verification.util';
 import { EmailService } from '../email/email.service';
 import { isEmpty } from 'lodash';
+import { MongoEmailVerificationRepository } from 'src/repositories/mongo/mongo-email_verification.repository';
+import { MongoResetPasswordRepository } from 'src/repositories/mongo/mongo-reset_password.repository';
 
 @Injectable()
 export class AuthService {
@@ -28,8 +28,8 @@ export class AuthService {
 		private readonly jwtService: JwtService,
 		private readonly emailService: EmailService,
 		private readonly userService: UserService,
-		private readonly resetPasswordRepository: ResetPasswordRepository,
-		private readonly emailVerificationRepository: EmailVerificationRepository
+		private readonly mongoResetPasswordRepository: MongoResetPasswordRepository,
+		private readonly mongoEmailVerificationRepository: MongoEmailVerificationRepository
 	) {}
 
 	async login(loginDto: LoginDto) {
@@ -96,7 +96,7 @@ export class AuthService {
 			throw new BadRequestException('Xác nhận mật khẩu không khớp');
 		}
 
-		const record = await this.resetPasswordRepository.createOrUpdateToken(email, newPassword);
+		const record = await this.mongoResetPasswordRepository.createOrUpdateToken(email, newPassword);
 		if (!record) {
 			throw new InternalServerErrorException('Không thể tạo yêu cầu đặt lại mật khẩu');
 		}
@@ -114,7 +114,7 @@ export class AuthService {
 				throw new ConflictException('Email đã được xác thực');
 			}
 
-			const record = await this.emailVerificationRepository.createOrUpdate(email);
+			const record = await this.mongoEmailVerificationRepository.createOrUpdate(email);
 			if (!record) {
 				throw new InternalServerErrorException('Không thể tạo yêu cầu xác thực email');
 			}
@@ -133,14 +133,14 @@ export class AuthService {
 	async verifyResetPasswordToken(verifyResetPasswordDto: VerifyResetPasswordDto) {
 		const { email, token } = verifyResetPasswordDto;
 
-		const storedToken = await this.resetPasswordRepository.findByEmail(email);
+		const storedToken = await this.mongoResetPasswordRepository.findByEmail(email);
 		if (!storedToken) {
 			throw new NotFoundException('Không tìm thấy mã xác thực');
 		}
 
 		try {
 			if (!validateResetPasswordToken(storedToken, token, email)) {
-				await this.resetPasswordRepository.delete(email);
+				await this.mongoResetPasswordRepository.delete(email);
 				throw new BadRequestException('Mã xác thực không hợp lệ hoặc đã hết hạn');
 			}
 
@@ -148,7 +148,7 @@ export class AuthService {
 
 			await Promise.all([
 				this.userService.updateUserPassword(user._id, storedToken.newPassword),
-				this.resetPasswordRepository.delete(email),
+				this.mongoResetPasswordRepository.delete(email),
 			]);
 
 			return { message: 'Đặt lại mật khẩu thành công' };
@@ -163,7 +163,7 @@ export class AuthService {
 	async verifyEmailToken(verifyEmailDto: VerifyEmailDto) {
 		const { token, email } = verifyEmailDto;
 
-		const record = await this.emailVerificationRepository.findByEmail(email);
+		const record = await this.mongoEmailVerificationRepository.findByEmail(email);
 		if (!record) {
 			throw new NotFoundException('Không tìm thấy yêu cầu xác thực, có thể đã hết hạn hoặc chưa từng tồn tại');
 		}
@@ -176,13 +176,13 @@ export class AuthService {
 			}
 
 			if (!validateEmailVerificationToken(record, token, email)) {
-				await this.emailVerificationRepository.delete(email);
+				await this.mongoEmailVerificationRepository.delete(email);
 				throw new BadRequestException('Mã xác thực không hợp lệ hoặc đã hết hạn. Vui lòng yêu cầu lại.');
 			}
 
 			await Promise.all([
 				this.userService.setEmailVerified(user._id, true),
-				this.emailVerificationRepository.delete(email),
+				this.mongoEmailVerificationRepository.delete(email),
 			]);
 
 			return { message: 'Xác thực email thành công' };
