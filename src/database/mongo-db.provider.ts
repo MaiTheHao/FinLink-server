@@ -10,7 +10,7 @@ export const databaseProviders = [
 			try {
 				return await mongoose.connect(mongoUri);
 			} catch (error) {
-				console.error('MongoDB connection error:', error);
+				console.error('Không thể kết nối tới MongoDB:', error);
 				throw error;
 			}
 		},

@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { UserSchema } from 'src/entities/schemas/user.schema';
 import { EmailVerificationSchema } from 'src/entities/schemas/email_verification.schema';
 import { ResetPasswordSchema } from 'src/entities/schemas/reset_password.schema';
+import { JwtRefreshTokenSchema } from 'src/entities/schemas/jwt_refresh_token.schema';
 
 export const modelsProviders = [
 	{
@@ -17,6 +18,11 @@ export const modelsProviders = [
 	{
 		provide: 'RESET_PASSWORD_MODEL',
 		useFactory: (connection: mongoose.Connection) => connection.model('ResetPassword', ResetPasswordSchema),
+		inject: ['MONGO_CONNECTION'],
+	},
+	{
+		provide: 'JWT_REFRESH_TOKEN_MODEL',
+		useFactory: (connection: mongoose.Connection) => connection.model('JwtRefreshToken', JwtRefreshTokenSchema),
 		inject: ['MONGO_CONNECTION'],
 	},
 ];

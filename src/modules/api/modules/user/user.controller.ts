@@ -2,7 +2,7 @@ import { Controller, Get, Put, Body, Param, UseGuards, Request, NotFoundExceptio
 import { UserService } from './user.service';
 import { AuthGuard } from '../auth/guards/auth.guard';
 
-@Controller('user')
+@Controller('api/user')
 export class UserController {
 	constructor(private readonly userService: UserService) {}
 

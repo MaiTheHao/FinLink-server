@@ -1,5 +1,4 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
-import { UserRepository } from 'src/repositories/json/user.repository';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { getSafeUserEmailAndPassword } from 'src/common/utils/user.util';
 import { hashPassword, comparePassword } from 'src/common/utils/password.util';
 import { isBcryptHash } from 'src/common/utils/hash.util';
@@ -9,10 +8,7 @@ import { MongoUserRepository } from 'src/repositories/mongo/mongo-user.repositor
 
 @Injectable()
 export class UserService {
-	constructor(
-		private readonly userRepository: UserRepository,
-		private readonly mongoUserRepository: MongoUserRepository
-	) {}
+	constructor(private readonly mongoUserRepository: MongoUserRepository) {}
 
 	async findByEmail(email: string): Promise<User> {
 		const user = await this.mongoUserRepository.findByEmail(email);

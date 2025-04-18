@@ -12,7 +12,7 @@ export class EmailService {
 			throw new BadRequestException('Chưa cấu hình FRONTEND_URL trong biến môi trường');
 		}
 
-		const verificationLink = `${FRONTEND_URL}/auth/verify-email?token=${token}&email=${email}`;
+		const verificationLink = `${FRONTEND_URL}/api/auth/verify-email?token=${token}&email=${email}`;
 
 		try {
 			await this.mailer.sendMail({
@@ -41,7 +41,7 @@ export class EmailService {
 		if (!FRONTEND_URL) {
 			throw new BadRequestException('Chưa cấu hình FRONTEND_URL trong biến môi trường');
 		}
-		const resetLink = `${FRONTEND_URL}/auth/verify-reset-password?token=${token}&email=${email}`;
+		const resetLink = `${FRONTEND_URL}/api/auth/verify-reset-password?token=${token}&email=${email}`;
 
 		try {
 			await this.mailer.sendMail({

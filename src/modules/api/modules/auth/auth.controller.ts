@@ -8,7 +8,7 @@ import { AuthGuard } from './guards/auth.guard';
 import { VerifyEmailDto } from './dto/verify_email.dto';
 import { LogService } from '../../../log/log.service';
 
-@Controller('auth')
+@Controller('api/auth')
 export class AuthController {
 	constructor(
 		private readonly authService: AuthService,
